@@ -14,6 +14,7 @@ train = df[df['date'] < split_date].copy()
 test = df[df['date'] >= split_date].copy()
 
 feature_columns = ['hour', 'dayofweek', 'month', 'is_weekend', 'line', 'from', 'stop_sequence']
+weather_features = ['temperature_2m', 'precipitation', 'snowfall', 'is_precip', 'is_snow', 'snow_depth', 'heavy_precip', 'windgusts_10m']
 
 
 for col in ['line', 'from']:
@@ -26,21 +27,27 @@ X_train, y_train = train[feature_columns], train['delayed']
 
 X_test, y_test = test[feature_columns], test['delayed']
 
+
+
 baseline_prediction = [False] * len(y_test)
 
 print("=== BASELINE ===")
 print('Accuracy:', round(accuracy_score(y_test, baseline_prediction), 4))
 print("(precision/recall/F1 are 0 - it never predicts a delay\n)")
 
-model = lgb.LGBMClassifier(n_estimators=200, learning_rate=0.05)
+def train_and_eval(name, feature_cols):
+    model = lgb.LGBMClassifier(n_estimators=200, learning_rate=0.05)
+    model.fit(train[feature_cols], y_train)
+    pred = model.predict(test[feature_cols])
+    print(f"\n=== {name} ===")
+    print("Accuracy: ", round(accuracy_score(y_test, pred), 4))
+    print("Precision:", round(precision_score(y_test, pred), 4))
+    print("Recall:   ", round(recall_score(y_test, pred), 4))
+    print("F1:       ", round(f1_score(y_test, pred), 4))
+    print("Confusion:\n", confusion_matrix(y_test, pred))
+    imp = pd.Series(model.feature_importances_, index=feature_cols).sort_values(ascending=False)
+    print("Top 10 features:\n", imp.head(10))
+    return model
 
-model.fit(X_train, y_train)
-prediction = model.predict(X_test)
-
-
-print("=== LIGHTGBM MODEL ===")
-print("Accuracy: ", round(accuracy_score(y_test, prediction), 4))
-print("Precision:", round(precision_score(y_test, prediction), 4))
-print("Recall:   ", round(recall_score(y_test, prediction), 4))
-print("F1:       ", round(f1_score(y_test, prediction), 4))
-print("\nConfusion matrix:\n", confusion_matrix(y_test, prediction))
+train_and_eval("NO WEATHER", feature_columns)
+train_and_eval("WITH WEATHER", feature_columns + weather_features)

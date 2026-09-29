@@ -26,16 +26,6 @@ Mar 2018 – May 2020), scraped from NJ Transit's DepartureVision service.
 └── README.md
 ```
 
-## Plan (weekend MVP)
-1. **Profile + clean** — know the data, drop junk, decide how to treat cancellations.
-2. **Features** — hour, day-of-week, month, line, station; then join your weather data.
-3. **Baseline** — "always on time" or mean-delay. This is the number to beat.
-4. **Model** — LightGBM/XGBoost: classifier (delayed yes/no) or regressor (minutes).
-5. **Evaluate** — accuracy/F1 or MAE vs. baseline, confusion matrix, feature importance.
-
-## The one hard rule for this build
-**Get a dumb baseline model running end-to-end BEFORE perfecting the clean.**
-Working-but-imperfect beats flawless-but-unfinished. Box the cleaning; close the box.
 
 ## Notes on the raw data
 - The download includes separate **"invalid trains"** files — read those first;
@@ -45,10 +35,15 @@ Working-but-imperfect beats flawless-but-unfinished. Box the cleaning; close the
 - The **Mar–May 2020** tail is the COVID collapse — a regime change, not dirt.
   Most likely you exclude it and say so.
 
+## 1st Hypothesis
+
+I believe that weather can significantly help with predicting whether NJ Transit rails will
+be late to their designated station. Bad weather causes unwanted debris on the tracks which
+can force trains to slow or come to a stop, ultimately causing them to be delayed. Although
+this most likely won't be the only factor to why NJ transit is late, I think it would be 
+a good starting point on creating a delay prediction model for NJ Transit lines.
+
 ## Data quality summary
-<!-- After running the profiler, write 3–4 sentences here:
-     row count, schema consistency, what missingness means, dups removed,
-     how you handled the COVID months, target reliability. Resume asset. -->
 
 The dataset is 6.37M stop-level records (one row per train per station) 
 across 27 monthly files, Mar 2018–May 2020, with a consistent schema and 
@@ -61,6 +56,30 @@ show a sharp volume drop and are excluded, leaving continuous pre-pandemic data 
 
 ## Results
 <!-- baseline score, model score, top features, one real insight -->
+=== BASELINE ===
+Accuracy: 0.7349
+(precision/recall/F1 are 0 - it never predicts a delay)
+
+
+## ======= MODEL TESTING WITH & WITHOUT WEATHER FEATURES LGMCLASSIFIER USING CLASS_WEIGHT = "BALANCED" =========
+
+
+## 2nd Hypothesis
+
+After analyzing our incorporated weather data into features.py, it is evident
+that weather is not a much of a major feature utilized by the prediction model.
+What are major features would be scheduled time (hour), station the train is coming from,
+and it's line.
+
+Due to these factors, and a realization that NJ Transit often gives higher priority to
+Amtrak rails (which has been filtered out of our dataFrame), I believe that maybe we could
+improve the prediction model by knowing which Amtrak rails are scheduled and whether they
+overlap with NJ Transit schedules.
+
+I won't be removing weather data just yet, but it is a possibility that it will be removed in
+the future due to its poor performance on the prediction model. Our model has slighly better performance
+without the weather data.
+
 
 ## Resume pitch (draft)
 <!-- e.g. "Built an end-to-end ML pipeline predicting NJ Transit delays across
