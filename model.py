@@ -3,7 +3,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import lightgbm as lgb
 
 
-df = pd.read_parquet('data/features.parquet')
+df = pd.read_parquet('data/processed/features.parquet')
 
 df['date'] = pd.to_datetime(df['date'])
 

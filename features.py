@@ -1,6 +1,6 @@
 import pandas as pd
 
-df = pd.read_parquet('data/clean.parquet')
+df = pd.read_parquet('data/processed/clean.parquet')
 
 df['scheduled_time'] = pd.to_datetime(df['scheduled_time'])
 df['hour'] = df['scheduled_time'].dt.hour
@@ -43,4 +43,4 @@ print('\nRows:', len(model_df))
 print('Weather nulls:\n', model_df[['temperature_2m', 'precipitation']].isna().sum())
 print('heavy_precip share:', round(model_df['heavy_precip'].mean(), 4))
 
-model_df.to_parquet('data/features.parquet')
+model_df.to_parquet('data/processed/features.parquet')

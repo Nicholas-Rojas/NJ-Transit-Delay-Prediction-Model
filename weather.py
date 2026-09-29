@@ -21,7 +21,7 @@ HOURLY_VARS = [
 ]
 
 ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
-OUTPUT_PATH = "data/weather.parquet"
+OUTPUT_PATH = "data/processed/weather.parquet"
  
  
 def fetch_weather(lat, lon, start, end, hourly_vars, retries=3):
