@@ -2,6 +2,8 @@ import pandas as pd
 
 df = pd.read_parquet('data/processed/clean.parquet')
 
+amtrak_congestion = pd.read_parquet('data/processed/amtrak_congestion.parquet')
+
 df['scheduled_time'] = pd.to_datetime(df['scheduled_time'])
 df['hour'] = df['scheduled_time'].dt.hour
 df['dayofweek'] = df['scheduled_time'].dt.dayofweek
@@ -10,11 +12,17 @@ df['is_weekend'] = df['dayofweek'].isin([5, 6])
 
 df['datehour'] = df['scheduled_time'].dt.floor('h')
 
-feature_columns = ['hour', 'dayofweek', 'month', 'is_weekend', 'line', 'from', 'stop_sequence']
+df = df.merge(amtrak_congestion, on=['from', 'datehour'], how='left')
+df['amtrak_count'] = df['amtrak_count'].fillna(0)
+
+df = df.sort_values(['train_id', 'date', 'stop_sequence'])
+df['prev_delay'] = df.groupby(['train_id', 'date'])['delay_minutes'].shift(1)
+
+feature_columns = ['hour', 'dayofweek', 'month', 'is_weekend', 'line', 'from', 'stop_sequence', 'amtrak_count', 'prev_delay']
 
 model_df = df[feature_columns + ['delayed', 'datehour']].copy()
 
-weather_df = pd.read_parquet('data/weather.parquet')
+weather_df = pd.read_parquet('data/processed/weather.parquet')
 weather_df['datehour'] = pd.to_datetime(weather_df['time']).dt.floor('h')
 
 weather_cols = ['datehour', 'temperature_2m', 'precipitation', 'snowfall', 'snow_depth', 'windgusts_10m']
@@ -44,3 +52,8 @@ print('Weather nulls:\n', model_df[['temperature_2m', 'precipitation']].isna().s
 print('heavy_precip share:', round(model_df['heavy_precip'].mean(), 4))
 
 model_df.to_parquet('data/processed/features.parquet')
+
+chk = df.sort_values(['train_id', 'date', 'stop_sequence'])
+cols = ['train_id', 'date', 'stop_sequence', 'delay_minutes', 'prev_delay']
+first_train = chk['train_id'].iloc[0]
+print(chk[chk['train_id'] == first_train][cols].head(8))

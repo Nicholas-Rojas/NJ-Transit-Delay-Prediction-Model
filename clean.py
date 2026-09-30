@@ -28,7 +28,7 @@ df = df.dropna(subset=['scheduled_time', 'delay_minutes'])
 
 df["delayed"] = df["delay_minutes"] > 5
 
-df.to_parquet("data/clean.parquet")
+df.to_parquet("data/processed/clean.parquet")
 
 
 print('Rows after cleaning:', len(df))

@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 import lightgbm as lgb
+import warnings; warnings.filterwarnings('ignore')
 
 
 df = pd.read_parquet('data/processed/features.parquet')
@@ -36,7 +37,7 @@ print('Accuracy:', round(accuracy_score(y_test, baseline_prediction), 4))
 print("(precision/recall/F1 are 0 - it never predicts a delay\n)")
 
 def train_and_eval(name, feature_cols):
-    model = lgb.LGBMClassifier(n_estimators=200, learning_rate=0.05)
+    model = lgb.LGBMClassifier(n_estimators=200, learning_rate=0.05, class_weight='balanced', verbose=-1)
     model.fit(train[feature_cols], y_train)
     pred = model.predict(test[feature_cols])
     print(f"\n=== {name} ===")
@@ -51,3 +52,14 @@ def train_and_eval(name, feature_cols):
 
 train_and_eval("NO WEATHER", feature_columns)
 train_and_eval("WITH WEATHER", feature_columns + weather_features)
+
+train_and_eval("BASE + AMTRAK", feature_columns + ['amtrak_count'])
+
+train_and_eval("BASE + PREV_DELAY", feature_columns + ['prev_delay'])
+
+train_and_eval("BASE + PREV_DELAY + WEATHER", feature_columns + weather_features + ['prev_delay'] )
+
+train_and_eval("BASE + PREV_DELAY + AMTRAK", feature_columns + ['amtrak_count'] + ['prev_delay'] )
+
+train_and_eval("BASE + PREV_DELAY + WEATHER + AMTRAK", feature_columns + weather_features + ['prev_delay'] + ['amtrak_count'] )
+

@@ -1,24 +1,26 @@
 import pandas as pd
 import glob
 
-# Just ONE monthly CSV for exploration — fast, and enough to see the shape.
-sample = sorted(glob.glob('data/raw/*.csv'))[0]   # adjust path/pattern to yours
-df = pd.read_csv(sample)
+files = [f for f in sorted(glob.glob('data/raw/*.csv')) if 'invalid' not in f]
 
-print("File:", sample)
-print("Columns:", list(df.columns), "\n")
+frames = []
 
-# 1. What 'type' values exist, and how is Amtrak labeled/spelled?
-print("=== type value counts ===")
-print(df['type'].value_counts(dropna=False), "\n")
+for f in files:
+    d = pd.read_csv(f, usecols=['from', 'actual_time', 'type'])
+    frames.append(d[d['type'] == 'Amtrak'])
 
-amtrak = df[df['type'] != 'NJ Transit'].copy()   # everything you filtered out
-print("Non-NJT rows:", len(amtrak), f"({len(amtrak)/len(df):.1%} of file)\n")
 
-# 2. Which STATIONS do Amtrak trains actually appear at? (the join surface)
-print("=== top Amtrak stations ===")
-print(amtrak['from'].value_counts().head(15), "\n")
+amtrak = pd.concat(frames, ignore_index=True)
+amtrak['actual_time'] = pd.to_datetime(amtrak['actual_time'])
+amtrak['datehour'] = amtrak['actual_time'].dt.floor('h')
 
-# 3. Is the messiness in naming? Peek at a few raw rows.
-print("=== sample Amtrak rows ===")
-print(amtrak[['train_id', 'type', 'line', 'from', 'scheduled_time']].head(10))
+congestion = (amtrak.groupby(['from', 'datehour'])
+                    .size()
+                    .reset_index(name='amtrak_count'))
+
+congestion.to_parquet('data/processed/amtrak_congestion.parquet', index=False)
+
+print("congestion table shape:", congestion.shape)
+print(congestion['amtrak_count'].describe())
+print("\nbusiest station-hours:")
+print(congestion.sort_values('amtrak_count', ascending=False).head())
