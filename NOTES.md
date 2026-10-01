@@ -44,52 +44,6 @@ snow_depth          67
 dtype: int32
 
 
-========= CLASS_WEIGHT NOT INCLUDED =========
-
-=== NO WEATHER ===
-Accuracy:  0.7458
-Precision: 0.5469
-Recall:    0.2383
-F1:        0.3319
-Confusion:
- [[598268  45853]
- [176948  55350]]
-
-
-Top 10 features:
- from             2568
-hour             1238
-line              648
-stop_sequence     610
-dayofweek         497
-month             439
-is_weekend          0
-dtype: int32
-
-
-=== WITH WEATHER ===
-Accuracy:  0.7388
-Precision: 0.5182
-Recall:    0.209
-F1:        0.2979
-Confusion:
- [[598968  45153]
- [183738  48560]]
-Top 10 features:
-
-
-from              2207
-hour              1034
-line               582
-dayofweek          510
-stop_sequence      498
-month              402
-temperature_2m     378
-windgusts_10m      189
-snow_depth          77
-precipitation       70
-dtype: int32
-
 
 
 ======== TESTING/ANALYZING AMTRAK SCHEDULE ==========
@@ -244,3 +198,27 @@ month             189
 dayofweek         180
 is_weekend          0
 dtype: int32
+
+
+
+## Cross Reference Results
+
+
+congestion table shape: (93018, 3)
+count    93018.000000
+mean         3.353104
+std          2.213167
+min          1.000000
+25%          2.000000
+50%          3.000000
+75%          5.000000
+max         20.000000
+Name: amtrak_count, dtype: float64
+
+busiest station-hours:
+                        from            datehour  amtrak_count
+61693           Philadelphia 2018-08-22 15:00:00            20
+21092  New York Penn Station 2018-08-22 15:00:00            20
+24393  New York Penn Station 2019-02-13 07:00:00            19
+46045    Newark Penn Station 2018-08-22 15:00:00            19
+24673  New York Penn Station 2019-02-27 15:00:00            15
