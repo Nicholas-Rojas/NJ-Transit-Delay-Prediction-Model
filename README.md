@@ -14,6 +14,11 @@ NJ Transit + Amtrak (NEC) Rail Performance (Kaggle), ~6.37M stop-level
 records (one row per train per station), Mar 2018 – May 2020, scraped from NJ
 Transit's DepartureVision service. ~5.3M rows used after cleaning.
 
+**Link to Date**
+https://www.kaggle.com/datasets/pranavbadami/nj-transit-amtrak-nec-performance/data
+
+
+
 ## Results
 
 Target: `delayed = delay_minutes > 5`, per stop-level row. Evaluation uses a
